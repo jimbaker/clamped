@@ -1,2 +1,7 @@
 *.pyc
 *.class
+*~
+dist/*
+build/*
+clamped.egg-info/*
+*.jar
