@@ -1,6 +1,60 @@
 clamped
 =======
 
+The idea of clamp is very simple; it's to support functionality like
+the following in Java code:
+
+````java
+import bar.clamped.BarClamp;  // yes, you can now just import Python classes!
+
+public class UseClamped {
+
+    public static void main(String[] args) {
+        BarClamp barclamp = new BarClamp();
+	try {
+	    System.out.println("BarClamp: " + barclamp.call());
+	} catch (Exception ex) {
+	    System.err.println("Exception: " + ex);
+	}
+    }
+
+}
+````
+
+Such clamping is even more useful for projects like Storm where in
+using Python classes, you would need similar support at the
+`ClassLoader` level.
+
+To write a clampable Python class, here's what it looks like. Note
+that such classes need to extend a Java class and/or Java
+interfaces. This Python class extends two Java interfaces,
+`Serializable` and `Callable`. By doing so, Java code knows how to
+work with your Python classes. Note this part is no different than
+writing a Python callback for Java. However, the key extra step is the
+use of `ClampProxyMaker`, which also indicates that the package for
+this class should be `bar`, or fully qualified,
+`bar.clamped.BarClamp`.
+
+````python
+import java
+from java.io import Serializable
+from java.util.concurrent import Callable
+
+from clamp import ClampProxyMaker
+
+
+class BarClamp(Callable, Serializable):
+
+    __proxymaker__ = ClampProxyMaker("bar")
+
+    def __init__(self):
+        print "Being init-ed", self
+
+    def call(self):
+        print "foo"
+        return 42
+````
+
 To use this example project, you need to install install both clamp
 and a fork of Jython that supports SSL:
 
@@ -42,10 +96,10 @@ debugging so we know it's still working :)
 ````
 ClampProxyMaker: bar None array(java.lang.Class, [<type 'java.util.concurrent.Callable'>, <type 'java.io.Serializable'>]) BarClamp clamped org.python.proxies.clamped$BarClamp$1 {'__init__': <function __init__ at 0x2>, '__module__': 'clamped', 'call': <function call at 0x3>, '__proxymaker__': <clamp.ClampProxyMaker object at 0x4>}
 superclass=None, interfaces=array(java.lang.Class, [<type 'java.util.concurrent.Callable'>, <type 'java.io.Serializable'>]), className=BarClamp, pythonModuleName=clamped, fullProxyName=bar.clamped.BarClamp, mapping={'__init__': <function __init__ at 0x2>, '__module__': 'clamped', 'call': <function call at 0x3>, '__proxymaker__': <clamp.ClampProxyMaker object at 0x4>}, package=bar, kwargs={}
-Entering makeClass org.python.proxies.clamp$SerializableProxyMaker$0@fd69131
+Entering makeClass org.python.proxies.clamp$SerializableProxyMaker$0@76ef1d4c
 Looked up proxy bar.clamped.BarClamp
-Being init-ed bar.clamped.BarClamp@4390e5dc
-BarClamp bar.clamped.BarClamp@5de2f12b
+Being init-ed bar.clamped.BarClamp@5e476e34
+BarClamp bar.clamped.BarClamp@23944847
 BarClamp: 42
 ````
 
@@ -144,3 +198,12 @@ public class BarClamp implements PyProxy, Callable, Serializable, ClassDictInit
     }
 }
 ````
+
+Credits
+=======
+
+Clamp is a project that has been discussed for a long time in the
+Jython community as a way to replace the functionality of
+`jythonc`. [Darjus Loktevic](http://darjus.blogspot.com/2013/01/customizing-jython-proxymaker.html)
+did much of the latest work to get this working, and I have added a
+few critical bits, including setuptools integration.

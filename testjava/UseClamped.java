@@ -1,4 +1,4 @@
-import bar.clamped.BarClamp;
+import bar.clamped.BarClamp;  // yes, you can now just import Python classes!
 
 public class UseClamped {
 
