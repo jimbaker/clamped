@@ -7,12 +7,7 @@ from clamp import ClampProxyMaker
 
 class BarClamp(Callable, Serializable):
 
-    __proxymaker__ = ClampProxyMaker(
-        "bar",
-        constants={ "fortytwo": (java.lang.Integer(42), java.lang.Integer.TYPE),
-                    "str": ("A string", java.lang.String),
-                    "serialVersionUID" : (java.lang.Long(99), java.lang.Long.TYPE),
-                   })
+    __proxymaker__ = ClampProxyMaker("bar")
 
     def __init__(self):
         print "Being init-ed", self

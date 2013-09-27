@@ -55,6 +55,27 @@ class BarClamp(Callable, Serializable):
         return 42
 ````
 
+Next, a key piece of clamp is that it supports setuptools and soon
+the PyPI ecosystem. This is all that is required to clamp a module,
+you simply need to specify it with the `clamp` keyword and require the
+`clamp` package:
+
+````python
+import ez_setup
+ez_setup.use_setuptools()
+
+from setuptools import setup, find_packages
+
+
+setup(
+    name = "clamped",
+    version = "0.1",
+    packages = find_packages(),
+    install_requires = ["clamp>=0.1"],
+    clamp = ["clamped"],
+)
+````
+
 To use this example project, you need to install install both clamp
 and a fork of Jython that supports SSL:
 
@@ -132,9 +153,7 @@ public class BarClamp implements PyProxy, Callable, Serializable, ClassDictInit
 {
     protected PyObject __proxy;
     protected transient PySystemState __systemState;
-    public static final int fortytwo;
     public static final long serialVersionUID;
-    public static final String str;
 
     public void _setPyInstance(final PyObject _proxy) {
         this.__proxy = _proxy;
@@ -188,9 +207,7 @@ public class BarClamp implements PyProxy, Callable, Serializable, ClassDictInit
     }
 
     static {
-        fortytwo = 42;
-        serialVersionUID = 99L;
-        str = "A string";
+        serialVersionUID = 1L;
     }
 
     public static void classDictInit(final PyObject pyObject) {
