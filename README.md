@@ -264,11 +264,11 @@ clamp is still very much pre-alpha at this point; see the TODO list at
 the [project page][clamp].
 
 Also, it's not feasible to use `__new__` in your Python classes that
-are clamped. Why not? Java expect that constructing an object returns
-a class of that object. The solution is simple: call a factory
-function, in Python or Java, to return arbitrary objects. This is just
-a simple, but fundamental, mismatch between Python and Java in its
-object model.
+are clamped. Why not? Java expects that constructing an object for a
+given class returns an object of that class! The solution is simple:
+call a factory function, in Python or Java, to return arbitrary
+objects. This is just a simple, but fundamental, mismatch between
+Python and Java in its object model.
 
 
 Credits
@@ -276,8 +276,8 @@ Credits
 
 Clamp is a project that has been discussed for a long time in the
 Jython community as a way to replace the functionality of `jythonc`,
-which is no longer supported. [Darjus Loktevic][customizing
-proxymaker] did much of the latest work to get this working, and I
+which is no longer supported. [Darjus Loktevic][customizing proxymaker]
+did much of the latest work to get this working, and I
 have added a few critical bits, including setuptools integration.
 
 
