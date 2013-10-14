@@ -146,7 +146,7 @@ Java. Let's say you have this class:
 ````bash
 export CLASSPATH=`pwd`/clamped-0.1-single.jar:.
 cd testjava
-javac UseClamped.java  # ignore warnings about missing annotations
+javac UseClamped.java
 java UseClamped
 ````
 
