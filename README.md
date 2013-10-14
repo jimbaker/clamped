@@ -1,8 +1,8 @@
-clamped
-=======
+clamped: Demonstrating the clamp package
+========================================
 
-The idea of clamp is very simple; it's to support functionality like
-the following in Java code:
+The [clamp package][clamp] supports functionality like the following in Java
+code:
 
 ````java
 import bar.clamped.BarClamp;  // yes, you can now just import Python classes!
@@ -21,9 +21,21 @@ public class UseClamped {
 }
 ````
 
-Such clamping is even more useful for projects like Storm where in
-using Python classes, you would need similar support at the
-`ClassLoader` level.
+In addition, clamp also integrates with setuptools, in order to build
+jars in `site-packages`, and then to package up Jython, other
+dependent jars, the Python standard library, and installed packages
+into a single jar suitable for running on containers.
+
+There are alternatives to clamp, such as [object factories][] (or more
+generally dependency injection). However, object factories require
+that using Java code support a factory approach, vs simple
+constructors. This is not true of such projects as Storm. In part to
+address such needs as [Storm integration with Python][romper], this
+project was created.
+
+
+Writing a Python class to use clamp
+===================================
 
 To write a clampable Python class, here's what it looks like. Note
 that such classes need to extend a Java class and/or Java
@@ -71,7 +83,7 @@ setup(
     name = "clamped",
     version = "0.1",
     packages = find_packages(),
-    install_requires = ["clamp>=0.1"],
+    install_requires = ["clamp>=0.2"],
     clamp = ["clamped"],
 )
 ````
@@ -81,7 +93,7 @@ and a fork of Jython that supports SSL:
 
 1. `hg clone https://bitbucket.org/jimbaker/jython-ssl`. For this presentation, use `~jythondev/jython-ssl` as the place you put this.
 2. run `ant` in `~jythondev/jython-ssl` directory and do something like `alias jython-ssl=~/jythondev/jython-ssl/dist/bin/jython`
-3. `git clone https://github.com/rackerlabs/clamp.git`
+3. `git clone https://github.com/jythontools/clamp.git`
 4. `jython-ssl setup.py install`
 
 Both requirements will go away as soon as clamp is in PyPI and
@@ -91,21 +103,48 @@ support, of course).
 To then install this example package, which uses clamp:
 
 ````bash
-jython-ssl setup.py install
-jython-ssl setup.py buildjar
+$ jython-ssl setup.py install
+$ jython-ssl setup.py build_jar
 ````
 
-The `buildjar` step constructs a jarfile, with the default name of
-`clamped-0.1.jar` (`{projectname}-{version}.jar`) in this directory
-(probably should go in the build directory). You need this as a separate jar because this is the part that Java needs to go against to figure out to interface with Jython.
+The `build_jar` step constructs a jar in
+`site-packages/jars/clamped-0.1.jar`. It also ensures that this jar is
+automatically added to `sys.path` through the use of
+`site-pacakges/jar.pth`.
 
-Next step, you need to construct a reasonable `CLASSPATH`. I have
-included a simple script for constructing this path, `alljars`;
-assuming you are in the clamped directory:
+You can use this built jar for Java integration, but more likely you
+will need to build a single jar of your project, including all other
+clamped jars. To do this:
 
 ````bash
-export PATH=$(pwd)/bin:$PATH
-export CLASSPATH=$(alljars ~/jythondev/jython-ssl/dist/javalib/*.jar):$(alljars ~/jythondev/jython-ssl/dist/jython-dev.jar):$(pwd)/clamped-0.1.jar:.
+$ jython-ssl setup.py singlejar
+````
+
+which will construct a single jar, in our case
+`clamped-0.1-single.jar`. You can make this runnable if your toplevel
+directory specifies a `__run__.py` file:
+
+````python
+from clamped import BarClamp
+
+x = BarClamp()
+x.call()
+````
+
+To run, simply do the following:
+
+````bash
+$ java -jar clamped-0.1-single.jar
+````
+
+There you have it: Python code using a Java class to call Python, all
+packaged up in a single Java jar. Boggles the mind!
+
+With this single jar, you are now ready to directly integrate with
+Java. Let's say you have this class:
+
+````bash
+export CLASSPATH=`pwd`/clamped-0.1-single.jar:.
 cd testjava
 javac UseClamped.java  # ignore warnings about missing annotations
 java UseClamped
@@ -125,7 +164,8 @@ BarClamp: 42
 ````
 
 You can decompile the proxy class to see exactly what's going on with
-these steps. First, download the Procyon decompiler from https://bitbucket.org/mstrobel/procyon/downloads. I'm using 0.5.21, but the most recent when you look should be just fine.
+these steps. First, download the [Procyon decompiler][Procyon]. I'm
+using 0.5.21, but the most recent when you look should be just fine.
 
 Then unpack the jar and decompile with Procyon. You should do this in some
 unpacking directory, since jar unpacking will explode nicely at
@@ -216,11 +256,34 @@ public class BarClamp implements PyProxy, Callable, Serializable, ClassDictInit
 }
 ````
 
+
+Known issues
+============
+
+clamp is still very much pre-alpha at this point; see the TODO list at
+the [project page][clamp].
+
+Also, it's not feasible to use `__new__` in your Python classes that
+are clamped. Why not? Java expect that constructing an object returns
+a class of that object. The solution is simple: call a factory
+function, in Python or Java, to return arbitrary objects. This is just
+a simple, but fundamental, mismatch between Python and Java in its
+object model.
+
+
 Credits
 =======
 
 Clamp is a project that has been discussed for a long time in the
-Jython community as a way to replace the functionality of
-`jythonc`. [Darjus Loktevic](http://darjus.blogspot.com/2013/01/customizing-jython-proxymaker.html)
-did much of the latest work to get this working, and I have added a
-few critical bits, including setuptools integration.
+Jython community as a way to replace the functionality of `jythonc`,
+which is no longer supported. [Darjus Loktevic][customizing
+proxymaker] did much of the latest work to get this working, and I
+have added a few critical bits, including setuptools integration.
+
+
+<!-- References -->
+  [clamp]: https://github.com/jythontools/clamp
+  [object factories]: http://www.jython.org/jythonbook/en/1.0/JythonAndJavaIntegration.html#object-factories
+  [customizing proxymaker]: http://darjus.blogspot.com/2013/01/customizing-jython-proxymaker.html
+  [Procyon]: https://bitbucket.org/mstrobel/procyon/downloads
+  [romper]: https://github.com/rackerlabs/romper

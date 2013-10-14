@@ -8,6 +8,6 @@ setup(
     name = "clamped",
     version = "0.1",
     packages = find_packages(),
-    install_requires = ["clamp>=0.1"],
+    install_requires = ["clamp>=0.2"],
     clamp = ["clamped"],
 )
