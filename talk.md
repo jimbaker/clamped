@@ -139,25 +139,58 @@ public class UseClamped {
 Java/Python rendezvous
 ======================
 
-FIXME describe problem
 
 
-Sequence diagram
-================
+Initializing `BarClamp`
+=======================
 
-FIXME
+\begin{sequencediagram}
+\newthread{J}{Java}
+\newinst[1]{R}{Jython runtime}
+\newinst[1]{P}{Python}
+\begin{call}{J}{x = new BarClamp()}{R}{return}
+\begin{call}{R}{Py.initProxy()}{P}{return}
+\begin{callself}{P}{import site}{}
+\end{callself}
+\begin{callself}{P}{import clamped}{}
+\end{callself}
+\end{call}
+\end{call}
+\end{sequencediagram}
 
-Thread local
-============
 
-FIXME
+Loading Jython runtime
+======================
+
+* When does the Jython runtime get loaded? (bootstrap problem!)
+* `Py.initProxy` calls `Py.getThreadState`, which in turn loads the runtime as necessary!
+* `ThreadState` extends `java.lang.ThreadLocal`
 
 
-Code
-====
+Making a call
+=============
 
-FIXME
+\begin{sequencediagram}
+\newthread{J}{Java}
+\newinst[1]{R}{Jython runtime}
+\newinst[1]{P}{Python}
+\begin{call}{J}{x.call()}{R}{return}
+\begin{call}{R}{ProxyMaker.findPython(this, "call")}{P}{return}
+\begin{callself}{P}{BarClamp.call}{}
+\end{callself}
+\end{call}
+\end{call}
+\end{sequencediagram}
 
+
+Maintaining state
+=================
+
+* `ThreadState` also maintains state through the call stack, from Java
+  to Python and back, as necessary
+
+* Other critical call: `findPython`, so that proxies can get the
+  corresponding Python code!
 
 
 Metaprogramming
