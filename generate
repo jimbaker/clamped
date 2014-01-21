@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import argparse
+import os.path
+import subprocess
+
+
+def main():
+
+    # Setup argument parser and parse the arguments.
+    parser = argparse.ArgumentParser(
+            description="Simple driver for pandoc. " +
+                        "Or use pandoc directly for more options.")
+    parser.add_argument(
+            "--format", "-f",
+            choices=["beamer", "slides", "handout"],
+            default="slides",
+            help="output format, slides is an alias for beamer")
+    parser.add_argument(
+            "--incremental",
+            "-i",
+            default=False,
+            action="store_true",
+            help="incremental display of lists")
+    parser.add_argument("source", help="Source markdown file")
+    args = parser.parse_args()
+    output = os.path.splitext(args.source)[0] + ".pdf" #".tex"
+
+    # Construct call to pandoc.
+    if args.format in ["beamer", "slides"]:
+        pan_args = ["pandoc", "-f", "markdown", "-V", "theme:PaloAlto"]
+        if args.incremental:
+            pan_args.append("--incremental")
+        pan_args.extend(["--write", "beamer",
+                         "--template", "lecture.beamer",
+                         "--out", output, args.source])
+    elif args.format == "handout":
+        pan_args = ["pandoc",
+                    "--from", "markdown",
+                    "--to", "latex",
+                    "--template", "lecture.latex",
+                    "--out", output,
+                    args.source]
+
+    # Call pandoc to generate the pdf.
+    print("Executing:", " ".join(pan_args))
+    subprocess.check_call(pan_args)
+
+
+if __name__ == "__main__":
+    main()
+
