@@ -9,6 +9,14 @@ $endif$
 \usepackage{longtable}
 \usepackage{ifxetex,ifluatex}
 \usepackage{fixltx2e} % provides \textsubscript
+
+\usepackage{tikz}
+\usetikzlibrary{arrows,shadows}
+\usepackage{pgf-umlsd}
+\usepackage{smartdiagram}
+\usesmartdiagramlibrary{additions}
+\usepackage{graphicx}
+
 \ifxetex
   \usepackage{fontspec,xltxtra,xunicode}
   \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
