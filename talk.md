@@ -3,25 +3,32 @@
 % jim.baker@rackspace.com
 
 
-Background
-==========
+Clamp background
+================
 
-Clamp is part of the jythontools project (https://github.com/jythontools), which is to improve Python <=> Java integration. The idea of Clamp is very simple: 
-
-Enable precise layout of the generated Java bytecode for Python classes
- such that they can be used as modern Java classes (including annotation metadata), along with jar packaging
-
-
-
-One other potential interesting aspect of Clamp is that it heavily uses support for metaprogramming in Python and Java. I think this aspect might be extremely interesting to advanced Python/Java developers:
+* Part of the jythontools project (https://github.com/jythontools)
+* Improve Python <=> Java integration (which is already very good)
+* Enable precise layout of the generated Java bytecode for Python classes
+* So they can be used as modern Java classes - annotation metadata, type signatures
+* Jar packaging into site-packages
+* Or entire Jython installation wrapped into a **single jar**
 
 
 Benefits
 ========
 
 * JVM frameworks can readily work with clamped code, oblivious of its source
+* Especially need single jar support
 * Developers can stay as much in Python as possible
-* Working on SQLAlchemy-like DSL to support use Java annotations as if they are decorators and specify other aspects in a Pythonic way
+* Working on SQLAlchemy-like DSL
+
+
+Development
+===========
+
+* Heavily uses support for metaprogramming in Python and Java
+* If there's a metaprogramming facility, we seem to be either using it now or exploring it
+* Useful outcome already: merge `type`, `java.lang.Class` so equivalent types for metaclass usage
 
 
 Example: Storm
@@ -30,6 +37,7 @@ Example: Storm
 * "Real-time" complex event processing system
 * Runs topology of storms, bolts to process events ("tuples")
 * Can support at-least-once, exactly-once semantics
+
 
 What is needed for Storm
 ========================
@@ -61,18 +69,11 @@ How to use from Java?
 * Can use JSR-223 or embed Jython runtime into Java
 * But cannot directly use as-is from Java
 * Specifically no way to construct a new instance of the class
-* Jython book FIXME goes into lots of details here, such as object factories, etc
-
+* Definitive Guide to Jython goes into detail: object factories, etc
 * Good if you are already using JSR-223 etc, want to support scripting, etc
 * Bad if you just want to use Python code in your framework as one component, instead of having to write the component in Java
-
 * Note that solutions like Scala, Clojure, face similar issues: they need to describe how they should be exposed with a Java API
-
-
-Solution: Clamp
-===============
-
- solves this problem
+* Solution: Clamp!
 
 
 Python class, clamped
@@ -196,8 +197,9 @@ Maintaining state
 Metaprogramming
 ===============
 
-How does it work?
-=================
+* What do we mean by metaprogramming?
+* Solution to every problem in CS is indirection...
+* Except for indirection!
 
 
 Better DSLs through metaclasses
@@ -205,14 +207,6 @@ Better DSLs through metaclasses
 
 * Declarative DSL
 * Construct a mapper metaclass (similar to and inspired by SQLAlchemy)
-
-FIXME
-
-Python's metaclass support to support DSLs; in particular the use of metaclass factories to make metaclasses even more flexible for solving various types of mapping/integration problems.
-
-
-Clamp DSL current & future
-==========================
 
 
 API design aside
@@ -249,7 +243,7 @@ def clamp_base(package, proxy_maker=ClampProxyMaker):
 Proxy maker
 ===========
 
-* Heart of clamp!
+* Heart of Clamp!
 * Need to **precisely** generate in Java bytecode a Java class that implements interfaces and/or extends a class
 * With a given name, because Java can be finicky about that (`Class.forName`, any static linkage)
 * Constructors (no-arg at least)
@@ -260,10 +254,11 @@ Proxy maker
 `__proxymaker__` protocol
 =========================
 
-FIXME
-
-Specific to Jython, the new `__proxymaker__` protocol allows for a `CustomMaker` to intercept the construction of a Java proxy.
-CustomMaker API, hooking, sequence diagram
+* Specific to Jython
+* New `__proxymaker__` protocol allows for a `CustomMaker` to intercept the construction of a Java proxy
+* Code generation
+* Saving bytes
+* Turning into a class via a `ClassLoader`
 
 
 Code generation example: `<clinit>`
@@ -324,45 +319,26 @@ Standard visitor approach:
 ````
 
 
-DSL for constants 
-=========
+Current DSL
+===========
 
-FIXME
-
-
-DSL for checked exceptions
-==========================
-
-FIXME
-Example: can specify exact `Exception` that is thrown by `call` 
-
-
-DSL for annotations
-===================
-
-FIXME
-
-
-TODOs
-=====
-
-TODO list FIXME
-
+http://clamp.readthedocs.org
 
 Locating jars
+=============
 
 * Works because of this importer in `sys.path`:	 `'__classpath__'`
-* Maps to 
-* Uses Jython's support e of custom `ClassLoader` objects FIXME
-* 
-, to enable putting jars in Python packages, then be importable
+* Other `sys.path` magic allows for dynamic addition to the `sys.path`
+* How can we do this?
+* Jython uses custom `ClassLoader` objects - Java is very flexible with respect to how to find, load classes
 
 
 pth support
 ===========
 
-`jar.pth`
-FIXME tree output
+* Makes `sys.path` even more flexible
+* site-package packages can be added to `sys.path`
+* Implemented using `jar.pth`
 
 
 Custom setuptools hooks
@@ -444,20 +420,9 @@ def singlejar_command():
 Metaprogramming to be done
 ==========================
 
-FIXME
-
-
-Import hooks
-============
-
-Intercept the import of Java annotations so they can be used as class and function decorators.
-
-
-Rewriting Java bytecode
-=======================
-
- with ASM to support annotations/type signatures as class decorators.
-
+* Import hooks - intercept the import of Java annotations so they can be used as class and function decorators.
+* Rewriting Java bytecode - with ASM to support annotations/type signatures as class decorators.
+* More, much more!
 
 
 Clamp resources
