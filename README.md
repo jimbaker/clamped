@@ -48,16 +48,16 @@ this class should be `bar`, or fully qualified,
 `bar.clamped.BarClamp`.
 
 ````python
-import java
 from java.io import Serializable
 from java.util.concurrent import Callable
 
-from clamp import ClampProxyMaker
+from clamp import clamp_base
 
 
-class BarClamp(Callable, Serializable):
+BarBase = clamp_base("bar")  # metaclass to map to Java packages
 
-    __proxymaker__ = ClampProxyMaker("bar")
+
+class BarClamp(BarBase, Callable, Serializable):
 
     def __init__(self):
         print "Being init-ed", self

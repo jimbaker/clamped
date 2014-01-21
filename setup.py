@@ -11,6 +11,6 @@ setup(
     package_data = {
         "clamped": ["data/*.txt"],
     },
-    install_requires = ["clamp>=0.2"],
+    install_requires = ["clamp>=0.3"],
     clamp = ["clamped"],
 )
