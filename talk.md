@@ -1,43 +1,43 @@
-Clamp is part of the jythontools project (https://github.com/jythontools), which is to improve Python <=> Java integration. The idea of Clamp is very simple: to enable precise layout of the generated Java bytecode for Python classes such that they can be used as modern Java classes (including annotation metadata), along with jar packaging. This results in the following two benefits:
+% Clamp - Seamless integration of Python and Java
+% Jim Baker, Rackspace
+% jim.baker@rackspace.com
 
 
-Goals
-=====
+Background
+==========
 
-JVM frameworks can readily work with clamped code, oblivious of its source
-Developers can stay as much in Python as possible. In particular, we are now working on a SQLAlchemy-like DSL that will allow developers to use Java annotations as if they are decorators and specify other aspects in a Pythonic way.
+Clamp is part of the jythontools project (https://github.com/jythontools), which is to improve Python <=> Java integration. The idea of Clamp is very simple: 
+
+Enable precise layout of the generated Java bytecode for Python classes
+ such that they can be used as modern Java classes (including annotation metadata), along with jar packaging
 
 
 
+One other potential interesting aspect of Clamp is that it heavily uses support for metaprogramming in Python and Java. I think this aspect might be extremely interesting to advanced Python/Java developers:
 
-Support large-scale distributed computation systems like Hadoop, Storm, GraphLab
-With language of choice
-Example: Jython has seen some success on Hadoop with Pig for defining UDFs
 
+Benefits
+========
+
+* JVM frameworks can readily work with clamped code, oblivious of its source
+* Developers can stay as much in Python as possible
+* Working on SQLAlchemy-like DSL to support use Java annotations as if they are decorators and specify other aspects in a Pythonic way
 
 
 Example: Storm
 ==============
 
-"Real-time" complex event processing system
-Runs topology of storms, bolts to process events ("tuples")
-Can support at-least-once, exactly-once semantics
+* "Real-time" complex event processing system
+* Runs topology of storms, bolts to process events ("tuples")
+* Can support at-least-once, exactly-once semantics
 
+What is needed for Storm
+========================
 
-, even in the context of highly distributed systems and serialized Java objects flying through the wire :)
-No-arg constructors
-Needs to be able to resolve class names to classes (`Class.forName`, or through a class loader)
-
-
-
-
-
-
-
-
-
-
-One other potential interesting aspect of Clamp is that it heavily uses support for metaprogramming in Python and Java. I think this aspect might be extremely interesting to advanced Python/Java developers:
+* No-arg constructors
+* Specify `serialVersionUid`
+* Single jar support
+* Needs to be able to resolve class names to classes (`Class.forName`)
 
 
 Python class, extending Java interfaces
@@ -78,6 +78,8 @@ Solution: Clamp
 Python class, clamped
 =====================
 
+Simpy add the Clamp base, a metaclass:
+
 ````python
 from java.io import Serializable
 from java.util.concurrent import Callable
@@ -115,7 +117,7 @@ setup(
 Using from Java
 ===============
 
-**Yes, you can now just import Python classes!**
+**Simply import clamped Python classes into Java code!**
 
 ````java
 import bar.clamped.BarClamp;
@@ -124,7 +126,8 @@ public class UseClamped {
   public static void main(String[] args) {
     BarClamp barclamp = new BarClamp();
     try {
-      System.out.println("BarClamp: " + barclamp.call());
+      System.out.println("BarClamp: " + 
+        barclamp.call());
     } catch (Exception ex) {
       System.err.println("Exception: " + ex);
     }
@@ -154,7 +157,6 @@ Code
 ====
 
 FIXME
-
 
 
 
@@ -234,7 +236,8 @@ CustomMaker API, hooking, sequence diagram
 Code generation example: `<clinit>`
 ===================================
 
-Every class needs a static initialization method in Java, named `<clinit>`
+Every class has a specially-named hidden method, `<clinit>`, to
+support initialization for the class itself:
 
 ````java
   public static final long serialVersionUID;
@@ -351,7 +354,7 @@ Anatomy of a command
 ====================
 
 Enabling support for `jython setup.py build_jar`, or any other
-custom command requires the following:
+custom command, requires the following attributes:
 
 ````python
 class build_jar(setuptools.Command):
@@ -366,10 +369,10 @@ class build_jar(setuptools.Command):
 ````
 
 
-Adding new scripts in bin directory
-===================================
+Adding new scripts in Python's bin
+==================================
 
-`setup.py`:
+`setup.py` uses the same `entry_points` to point to custom scripts:
 
 ````python
   ...
@@ -424,9 +427,9 @@ Rewriting Java bytecode
 
 
 
-More FIXME
-==========
+Clamp resources
+===============
 
-Clamp project: https://github.com/jythontools/clamp
-Example project: https://github.com/jimbaker/clamped
-FIXME read the docs
+* Clamp project: https://github.com/jythontools/clamp
+* Example project: https://github.com/jimbaker/clamped
+* Documentation: http://clamp.readthedocs.org
