@@ -5,3 +5,6 @@ dist/*
 build/*
 clamped.egg-info/*
 *.jar
+.DS_Store
+*.egg
+*.tar.gz
