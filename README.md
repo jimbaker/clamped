@@ -83,8 +83,8 @@ setup(
     name = "clamped",
     version = "0.1",
     packages = find_packages(),
-    install_requires = ["clamp>=0.2"],
-    clamp = ["clamped"],
+    install_requires = ["clamp>=0.4"],
+    clamp = {"modules": ["clamped"]}
 )
 ````
 
