@@ -8,9 +8,7 @@ setup(
     name = "clamped",
     version = "0.1",
     packages = find_packages(),
-    package_data = {
-        "clamped": ["data/*.txt"],
-    },
     install_requires = ["clamp>=0.3"],
-    clamp = ["clamped"],
+    clamp = {
+        "modules": ["clamped"]},
 )
