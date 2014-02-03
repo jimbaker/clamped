@@ -77,14 +77,17 @@ import ez_setup
 ez_setup.use_setuptools()
 
 from setuptools import setup, find_packages
-
+from clamp.commands import clamp_command
 
 setup(
     name = "clamped",
     version = "0.1",
     packages = find_packages(),
     install_requires = ["clamp>=0.4"],
-    clamp = {"modules": ["clamped"]}
+    clamp = {
+        "modules": ["clamped"]
+    },
+    cmdclass = { "install": clamp_command }
 )
 ````
 
@@ -94,6 +97,7 @@ and a fork of Jython that supports SSL:
 1. `hg clone https://bitbucket.org/jimbaker/jython-ssl`. For this presentation, use `~jythondev/jython-ssl` as the place you put this.
 2. run `ant` in `~jythondev/jython-ssl` directory and do something like `alias jython-ssl=~/jythondev/jython-ssl/dist/bin/jython`
 3. `git clone https://github.com/jythontools/clamp.git`
+3a. Currently you need to use this branch: `git checkout 3rd-party-jars-on-path` until it is merged.
 4. `jython-ssl setup.py install`
 
 Both requirements will go away as soon as clamp is in PyPI and
@@ -103,21 +107,27 @@ support, of course).
 To then install this example package, which uses clamp:
 
 ````bash
-$ jython-ssl setup.py install
-$ jython-ssl setup.py build_jar
+$ jython-ssl setup.py clamp
 ````
 
-The `build_jar` step constructs a jar in
+The `clamp` command constructs a jar in
 `site-packages/jars/clamped-0.1.jar`. It also ensures that this jar is
 automatically added to `sys.path` through the use of
-`site-pacakges/jar.pth`.
+`site-packages/jar.pth`.
+
+Because of this setting, you don't need to use `clamp`, you can just
+run the usual `install` command:
+
+````python
+    cmdclass = { "install": clamp_command }
+````
 
 You can use this built jar for Java integration, but more likely you
 will need to build a single jar of your project, including all other
-clamped jars. To do this:
+clamped jars. To combine with the previous step:
 
 ````bash
-$ jython-ssl setup.py singlejar
+$ jython-ssl setup.py install singlejar
 ````
 
 which will construct a single jar, in our case
