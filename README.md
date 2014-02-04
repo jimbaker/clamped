@@ -97,7 +97,6 @@ and a fork of Jython that supports SSL:
 1. `hg clone https://bitbucket.org/jimbaker/jython-ssl`. For this presentation, use `~jythondev/jython-ssl` as the place you put this.
 2. run `ant` in `~jythondev/jython-ssl` directory and do something like `alias jython-ssl=~/jythondev/jython-ssl/dist/bin/jython`
 3. `git clone https://github.com/jythontools/clamp.git`
-3a. Currently you need to use this branch: `git checkout 3rd-party-jars-on-path` until it is merged.
 4. `jython-ssl setup.py install`
 
 Both requirements will go away as soon as clamp is in PyPI and
