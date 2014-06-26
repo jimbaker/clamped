@@ -1,7 +1,7 @@
-clamped: Demonstrating the clamp package
+Clamped: Demonstrating the Clamp package
 ========================================
 
-The [clamp package][clamp] supports functionality like the following in Java
+The [Clamp package][clamp] supports functionality like the following in Java
 code:
 
 ````java
@@ -21,17 +21,25 @@ public class UseClamped {
 }
 ````
 
-In addition, clamp also integrates with setuptools, in order to build
+In addition, Clamp also integrates with setuptools, in order to build
 jars in `site-packages`, and then to package up Jython, other
 dependent jars, the Python standard library, and installed packages
 into a single jar suitable for running on containers.
 
-There are alternatives to clamp, such as [object factories][] (or more
+There are alternatives to Clamp, such as [object factories][] (or more
 generally dependency injection). However, object factories require
 that using Java code support a factory approach, vs simple
 constructors. This is not true of such projects as Storm. In part to
 address such needs as [Storm integration with Python][romper], this
 project was created.
+
+
+Release notes
+=============
+
+Building jars with Clamp on Windows is not yet supported, but it will
+soon be. You can run such jars on Windows however. (There's a small
+problem in using `\` instead of `/` - easy to fix, however.)
 
 
 Writing a Python class to use clamp
@@ -40,22 +48,20 @@ Writing a Python class to use clamp
 To write a clampable Python class, here's what it looks like. Note
 that such classes need to extend a Java class and/or Java
 interfaces. This Python class extends two Java interfaces,
-`Serializable` and `Callable`. By doing so, Java code knows how to
+`Serializable` and `Callable`. By extending an interface or
+implementing class, you make it possible for Java code to know how to
 work with your Python classes. Note this part is no different than
 writing a Python callback for Java. However, the key extra step is the
-use of `ClampProxyMaker`, which also indicates that the package for
+use of `clamp_base`, which also indicates that the root package for
 this class should be `bar`, or fully qualified,
 `bar.clamped.BarClamp`.
 
 ````python
 from java.io import Serializable
 from java.util.concurrent import Callable
-
 from clamp import clamp_base
 
-
 BarBase = clamp_base("bar")  # metaclass to map to Java packages
-
 
 class BarClamp(BarBase, Callable, Serializable):
 
@@ -91,18 +97,45 @@ setup(
 )
 ````
 
-To use this example project, you need to install both Jython 2.7 trunk and Clamp:
+To use this example project, you need to install both Jython 2.7 trunk
+and Clamp. You can just cut & paste the below commands into bash (or
+similar shell), modifying as desired.
 
-1. Clone Jython trunk: `(mkdir ~/jythondev && hg clone https://bitbucket.org/jython/jython ~/jythondev/jython27)`
-2. Build Jython: `(cd ~/jythondev/jython27 && ant)`
-3. Setup a convenient alias: `alias jython27=~/jythondev/jython27/dist/bin/jython`
-3. Install Clamp: `(mkdir ~/jythontools && git clone https://github.com/jythontools/clamp.git ~/jythontools/clamp)`
-4. Run setup: `(cd ~/jythontools/clamp && jython27 setup.py install)`
+Throughout, I will use the functionality supported by bash that
+`(... some command ...)` runs `some command` in isolation, in
+particular, with respect to changing directory.
 
-To then install this example package, which uses clamp:
+First, let's clone Jython trunk and build it with ant:
 
 ````bash
-$ (cd ~/jythontools && git clone https://github.com/jimbaker/clamped.git && cd clamped && jython27 setup.py clamp)
+$ (mkdir -p ~/jythondev && \
+   hg clone https://bitbucket.org/jython/jython ~/jythondev/jython27 && \
+   cd ~/jythondev/jython27 && \
+   ant)
+````
+
+Setup a convenient alias:
+
+````bash
+$ alias jython27=~/jythondev/jython27/dist/bin/jython
+````
+
+Install Clamp; this will also install setuptools if necessary:
+
+````bash
+$ (cd ~/jythondev && \
+   git clone https://github.com/jythontools/clamp.git && \
+   cd clamp && \
+   jython27 setup.py install)
+`````
+
+Then install this example package:
+
+````bash
+$ (cd ~/jythondev && \
+   git clone https://github.com/jimbaker/clamped.git && \
+   cd clamped && \
+   jython27 setup.py clamp)
 ````
 
 The `clamp` command constructs a jar in
@@ -110,18 +143,21 @@ The `clamp` command constructs a jar in
 automatically added to `sys.path` through the use of
 `site-packages/jar.pth`.
 
-To make this more convenient, we can use a `cmdclass` with setuptools such that `install` uses Clamp's version, which does the  `clamp` as part of its work:
+To make this more convenient, we can use a `cmdclass` with setuptools
+such that `install` uses Clamp's version, which does the `clamp` as
+part of its work:
 
 ````python
     cmdclass = { "install": clamp_command }
 ````
 
-You can use now this newly built jar for Java integration, but more likely you
-will need to build a single jar of your project, including all other
-clamped jars. To combine with the previous step:
+You can use now this newly built jar for Java integration, but more
+likely you will need to build a single jar of your project, including
+all other clamped jars. To combine with the previous step:
 
 ````bash
-$ jython27 setup.py install singlejar
+$ (cd ~/jythondev/clamped && \
+   jython27 setup.py install singlejar)
 ````
 
 which will construct a single jar, in our case
