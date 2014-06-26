@@ -83,7 +83,7 @@ setup(
     name = "clamped",
     version = "0.1",
     packages = find_packages(),
-    install_requires = ["clamp>=0.4"],
+    install_requires = ["clamp"],
     clamp = {
         "modules": ["clamped"]
     },
@@ -91,22 +91,18 @@ setup(
 )
 ````
 
-To use this example project, you need to install install both clamp
-and a fork of Jython that supports SSL:
+To use this example project, you need to install both Jython 2.7 trunk and Clamp:
 
-1. `hg clone https://bitbucket.org/jimbaker/jython-ssl`. For this presentation, use `~jythondev/jython-ssl` as the place you put this.
-2. run `ant` in `~jythondev/jython-ssl` directory and do something like `alias jython-ssl=~/jythondev/jython-ssl/dist/bin/jython`
-3. `git clone https://github.com/jythontools/clamp.git`
-4. `jython-ssl setup.py install`
-
-Both requirements will go away as soon as clamp is in PyPI and
-jython-ssl is merged against trunk (with some more work on SSL
-support, of course).
+1. Clone Jython trunk: `(mkdir ~/jythondev && hg clone https://bitbucket.org/jython/jython ~/jythondev/jython27)`
+2. Build Jython: `(cd ~/jythondev/jython27 && ant)`
+3. Setup a convenient alias: `alias jython27=~/jythondev/jython27/dist/bin/jython`
+3. Install Clamp: `(mkdir ~/jythontools && git clone https://github.com/jythontools/clamp.git ~/jythontools/clamp)`
+4. Run setup: `(cd ~/jythontools/clamp && jython27 setup.py install)`
 
 To then install this example package, which uses clamp:
 
 ````bash
-$ jython-ssl setup.py clamp
+$ (cd ~/jythontools && git clone https://github.com/jimbaker/clamped.git && cd clamped && jython27 setup.py clamp)
 ````
 
 The `clamp` command constructs a jar in
@@ -114,19 +110,18 @@ The `clamp` command constructs a jar in
 automatically added to `sys.path` through the use of
 `site-packages/jar.pth`.
 
-Because of this setting, you don't need to use `clamp`, you can just
-run the usual `install` command:
+To make this more convenient, we can use a `cmdclass` with setuptools such that `install` uses Clamp's version, which does the  `clamp` as part of its work:
 
 ````python
     cmdclass = { "install": clamp_command }
 ````
 
-You can use this built jar for Java integration, but more likely you
+You can use now this newly built jar for Java integration, but more likely you
 will need to build a single jar of your project, including all other
 clamped jars. To combine with the previous step:
 
 ````bash
-$ jython-ssl setup.py install singlejar
+$ jython27 setup.py install singlejar
 ````
 
 which will construct a single jar, in our case
@@ -173,8 +168,9 @@ BarClamp: 42
 ````
 
 You can decompile the proxy class to see exactly what's going on with
-these steps. First, download the [Procyon decompiler][Procyon]. I'm
-using 0.5.21, but the most recent when you look should be just fine.
+these steps. First, download the [Procyon decompiler][Procyon]. I used
+0.5.21 when I did this step, but the most recent when you look should
+be just fine.
 
 Then unpack the jar and decompile with Procyon. You should do this in some
 unpacking directory, since jar unpacking will explode nicely at
@@ -269,7 +265,7 @@ public class BarClamp implements PyProxy, Callable, Serializable, ClassDictInit
 Known issues
 ============
 
-clamp is still very much pre-alpha at this point; see the TODO list at
+Clamp is still subject to refactoring at this point; see the TODO list at
 the [project page][clamp].
 
 Also, it's not feasible to use `__new__` in your Python classes that
