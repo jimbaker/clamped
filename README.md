@@ -101,17 +101,13 @@ To use this example project, you need to install both Jython 2.7 trunk
 and Clamp. You can just cut & paste the below commands into bash (or
 similar shell), modifying as desired.
 
-Throughout, I will use the functionality supported by bash that
-`(... some command ...)` runs `some command` in isolation, in
-particular, with respect to changing directory.
-
 First, let's clone Jython trunk and build it with ant:
 
 ````bash
-$ (mkdir -p ~/jythondev && \
-   hg clone https://bitbucket.org/jython/jython ~/jythondev/jython27 && \
-   cd ~/jythondev/jython27 && \
-   ant)
+$ mkdir -p ~/jythondev
+$ hg clone https://bitbucket.org/jython/jython ~/jythondev/jython27
+$ cd ~/jythondev/jython27
+$ ant)
 ````
 
 Setup a convenient alias:
@@ -123,19 +119,19 @@ $ alias jython27=~/jythondev/jython27/dist/bin/jython
 Install Clamp; this will also install setuptools if necessary:
 
 ````bash
-$ (cd ~/jythondev && \
-   git clone https://github.com/jythontools/clamp.git && \
-   cd clamp && \
-   jython27 setup.py install)
+$ cd ~/jythondev
+$ git clone https://github.com/jythontools/clamp.git
+$ cd clamp
+$ jython27 setup.py install
 `````
 
 Then install this example package:
 
 ````bash
-$ (cd ~/jythondev && \
-   git clone https://github.com/jimbaker/clamped.git && \
-   cd clamped && \
-   jython27 setup.py clamp)
+$ cd ~/jythondev
+$ git clone https://github.com/jimbaker/clamped.git
+$ cd clamped
+$ jython27 setup.py clamp
 ````
 
 The `clamp` command constructs a jar in
@@ -156,8 +152,8 @@ likely you will need to build a single jar of your project, including
 all other clamped jars. To combine with the previous step:
 
 ````bash
-$ (cd ~/jythondev/clamped && \
-   jython27 setup.py install singlejar)
+$ cd ~/jythondev/clamped
+$ jython27 setup.py install singlejar
 ````
 
 which will construct a single jar, in our case
