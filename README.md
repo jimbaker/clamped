@@ -107,7 +107,7 @@ First, let's clone Jython trunk and build it with ant:
 $ mkdir -p ~/jythondev
 $ hg clone https://bitbucket.org/jython/jython ~/jythondev/jython27
 $ cd ~/jythondev/jython27
-$ ant)
+$ ant
 ````
 
 Setup a convenient alias:
