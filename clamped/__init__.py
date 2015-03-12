@@ -1,3 +1,4 @@
+from six.moves import urllib
 from java.io import Serializable
 from java.util.concurrent import Callable
 
@@ -13,7 +14,7 @@ class BarClamp(BarBase, Callable, Serializable):
         print "Being init-ed", self
 
     def call(self):
-        print "foo"
+        print "Hello, world!"
         return 42
 
 

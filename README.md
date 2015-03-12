@@ -27,19 +27,22 @@ dependent jars, the Python standard library, and installed packages
 into a single jar suitable for running on containers.
 
 There are alternatives to Clamp, such as [object factories][] (or more
-generally dependency injection). However, object factories require
-that using Java code support a factory approach, vs simple
-constructors. This is not true of such projects as Storm. In part to
-address such needs as [Storm integration with Python][romper], this
-project was created.
+generally dependency injection). However, the object factories
+approach requires that the Java code must support factories, vs simple
+constructors. For projects like Apache Storm, you would have to write
+this object factory boilerplate code to use Python classes. In part to
+address such needs as [Storm integration with Python][romper], Clamp
+was created.
 
 
 Release notes
 =============
 
 Building jars with Clamp on Windows is not yet supported, but it will
-soon be. You can run such jars on Windows however. (There's a small
-problem in using `\` instead of `/` - easy to fix, however.)
+be once we have some development time to spare. (We are currently
+focused on getting Jython 2.7.0 out.) However, you can run such jars
+on Windows. (There's a small problem in using `\` instead of `/` -
+easy to fix, however.)
 
 
 Writing a Python class to use clamp
@@ -69,11 +72,11 @@ class BarClamp(BarBase, Callable, Serializable):
         print "Being init-ed", self
 
     def call(self):
-        print "foo"
+        print "Hello, world!"
         return 42
 ````
 
-Next, a key piece of clamp is that it supports setuptools and soon
+Next, a key piece of Clamp is that it supports setuptools and soon
 the PyPI ecosystem. This is all that is required to clamp a module,
 you simply need to specify it with the `clamp` keyword and require the
 `clamp` package:
@@ -97,46 +100,20 @@ setup(
 )
 ````
 
-To use this example project, you need to install both Jython 2.7 trunk
-and Clamp. You can just cut & paste the below commands into bash (or
-similar shell), modifying as desired.
+Follow the [Clamp installation][installation] steps.
 
-First, let's clone Jython trunk and build it with ant:
-
-````bash
-$ mkdir -p ~/jythondev
-$ hg clone https://bitbucket.org/jython/jython ~/jythondev/jython27
-$ cd ~/jythondev/jython27
-$ ant
-````
-
-Setup a convenient alias:
+Then install this example package. We will assume that you have
+`jython27` mapped to the Jython launcher, `$JYTHON_HOME/bin/jython`:
 
 ````bash
-$ alias jython27=~/jythondev/jython27/dist/bin/jython
-````
-
-Install Clamp; this will also install setuptools if necessary:
-
-````bash
-$ cd ~/jythondev
-$ git clone https://github.com/jythontools/clamp.git
-$ cd clamp
-$ jython27 setup.py install
-`````
-
-Then install this example package:
-
-````bash
-$ cd ~/jythondev
 $ git clone https://github.com/jimbaker/clamped.git
 $ cd clamped
 $ jython27 setup.py clamp
 ````
 
 The `clamp` command constructs a jar in
-`site-packages/jars/clamped-0.1.jar`. It also ensures that this jar is
-automatically added to `sys.path` through the use of
+`$JYTHON_HOME/Lib/site-packages/jars/clamped-0.1.jar`. It also ensures
+that this jar is automatically added to `sys.path` through the use of
 `site-packages/jar.pth`.
 
 To make this more convenient, we can use a `cmdclass` with setuptools
@@ -152,7 +129,6 @@ likely you will need to build a single jar of your project, including
 all other clamped jars. To combine with the previous step:
 
 ````bash
-$ cd ~/jythondev/clamped
 $ jython27 setup.py install singlejar
 ````
 
@@ -173,8 +149,17 @@ To run, simply do the following:
 $ java -jar clamped-0.1-single.jar
 ````
 
+which will result in output like the following:
+
+````
+Being init-ed bar.clamped.BarClamp@2798073c
+Hello, world!
+````
+
 There you have it: Python code using a Java class to call Python, all
-packaged up in a single Java jar. Boggles the mind!
+packaged up in a single Java jar. Boggles the mind! Of course, it's up
+to you to write something more interesting than outputting `Hello,
+world!`. For another example, check out [HelloWSGI][].
 
 With this single jar, you are now ready to directly integrate with
 Java. Let's say you have this class:
@@ -190,22 +175,18 @@ and then you should expect to see output like the following, mostly
 debugging so we know it's still working :)
 
 ````
-ClampProxyMaker: bar None array(java.lang.Class, [<type 'java.util.concurrent.Callable'>, <type 'java.io.Serializable'>]) BarClamp clamped org.python.proxies.clamped$BarClamp$1 {'__init__': <function __init__ at 0x2>, '__module__': 'clamped', 'call': <function call at 0x3>, '__proxymaker__': <clamp.ClampProxyMaker object at 0x4>}
-superclass=None, interfaces=array(java.lang.Class, [<type 'java.util.concurrent.Callable'>, <type 'java.io.Serializable'>]), className=BarClamp, pythonModuleName=clamped, fullProxyName=bar.clamped.BarClamp, mapping={'__init__': <function __init__ at 0x2>, '__module__': 'clamped', 'call': <function call at 0x3>, '__proxymaker__': <clamp.ClampProxyMaker object at 0x4>}, package=bar, kwargs={}
-Entering makeClass org.python.proxies.clamp$SerializableProxyMaker$0@76ef1d4c
-Looked up proxy bar.clamped.BarClamp
-Being init-ed bar.clamped.BarClamp@5e476e34
-BarClamp bar.clamped.BarClamp@23944847
+Being init-ed bar.clamped.BarClamp@129e4e49
+Hello, world!
 BarClamp: 42
 ````
 
 You can decompile the proxy class to see exactly what's going on with
 these steps. First, download the [Procyon decompiler][Procyon]. I used
-0.5.21 when I did this step, but the most recent when you look should
-be just fine.
+0.5.21 when I did this step, but the most recent version when you try
+this out should be just fine.
 
 Then unpack the jar and decompile with Procyon. You should do this in some
-unpacking directory, since jar unpacking will explode nicely at
+unpacking directory, since jar unpacking will explode a lot of files at
 toplevel.
 
 ```bash
@@ -293,6 +274,9 @@ public class BarClamp implements PyProxy, Callable, Serializable, ClassDictInit
 }
 ````
 
+Note that the Python code still lives in another class - this is the
+just the proxy wrapper.
+
 
 Known issues
 ============
@@ -304,7 +288,7 @@ Also, it's not feasible to use `__new__` in your Python classes that
 are clamped. Why not? Java expects that constructing an object for a
 given class returns an object of that class! The solution is simple:
 call a factory function, in Python or Java, to return arbitrary
-objects. This is just a simple, but fundamental, mismatch between
+objects. This is just a simple, if fundamental, mismatch between
 Python and Java in its object model.
 
 
@@ -320,6 +304,8 @@ have added a few critical bits, including setuptools integration.
 
 <!-- References -->
   [clamp]: https://github.com/jythontools/clamp
+  [HelloWSGI]: https://github.com/jimbaker/hellowsgi
+  [installation]: https://github.com/jythontools/clamp#installation
   [object factories]: http://www.jython.org/jythonbook/en/1.0/JythonAndJavaIntegration.html#object-factories
   [customizing proxymaker]: http://darjus.blogspot.com/2013/01/customizing-jython-proxymaker.html
   [Procyon]: https://bitbucket.org/mstrobel/procyon/downloads
