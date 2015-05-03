@@ -205,7 +205,7 @@ import java.io.*;
 import org.python.core.*;
 import org.python.compiler.*;
 
-@APIVersion(33)
+@APIVersion(36)
 @MTime(-1L)
 public class BarClamp implements PyProxy, Callable, Serializable, ClassDictInit
 {
@@ -261,7 +261,7 @@ public class BarClamp implements PyProxy, Callable, Serializable, ClassDictInit
                 return null;
             }
         }
-        return null;
+        throw (Throwable)Py.NotImplementedError("");
     }
 
     static {
